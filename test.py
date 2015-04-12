@@ -2,11 +2,12 @@ import zorg
 
 def work(my):
 
-    #my.lock.set_angle(100)
+    my.lock.set_angle(50)
 
     import time
     while True:
         my.led.toggle()
+        print my.mic.read()
         time.sleep(1)
 
     print "yours"
@@ -27,6 +28,11 @@ robot = zorg.robot({
             "driver": "zorg_gpio.Led",
             "connection": "edison",
             "pin": 4
+        },
+        "mic": {
+            "driver": "zorg_gpio.AnalogSensor",
+            "connection": "edison",
+            "pin": 1
         }
     },
     "name": "Smith",

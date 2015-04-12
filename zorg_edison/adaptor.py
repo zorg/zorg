@@ -3,7 +3,7 @@ import mraa
 
 
 MIN_PULSE_WIDTH = 600
-MAX_PULSE_WIDTH = 2500
+MAX_PULSE_WIDTH = 2600
 MAX_PERIOD = 7968
 
 
@@ -50,3 +50,13 @@ class Edison(Adaptor):
 
         pin.dir(mraa.DIR_OUT)
         pin.write(value)
+
+    def analog_read(self, pin_number):
+
+        if not pin_number in self.pins["analog"]:
+            pin = mraa.Aio(pin_number)
+            self.pins["analog"][pin_number] = pin
+        else:
+            pin = self.pins["analog"][pin_number]
+
+        return pin.read()
