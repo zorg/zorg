@@ -18,7 +18,8 @@ class Api(object):
 class HttpRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        self.type = "GET"
+        if not hasattr(self, "method"):
+            self.method = "GET"
 
         self.send_response(200)
 
@@ -39,6 +40,11 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         self.wfile.write(json_response)
         self.wfile.close()
+
+    def do_POST(self):
+        self.method = "POST"
+
+        return self.do_GET()
 
     def get_response(self, path):
         if not path or path[0] != "api":
@@ -180,7 +186,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         command = getattr(device, command_name)
 
-        if self.type == "GET":
+        if self.method == "GET":
             request_body = ""
         else:
             request_body = self.rfile.read()
