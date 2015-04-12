@@ -18,6 +18,8 @@ class Edison(Adaptor):
             "pwm": {},
         }
 
+        print "Edison"
+
     def servo_write(self, pin, degrees):
 
         pulse_width = MIN_PULSE_WIDTH + (degrees / 180.0) * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH)
@@ -36,3 +38,15 @@ class Edison(Adaptor):
             pin = self.pins["pwm"][pin_number]
 
         pin.pulsewidth_us(value)
+
+    def digital_write(self, pin_number, value):
+
+        if not pin_number in self.pins["digital"]:
+            pin = mraa.Gpio(pin_number)
+            self.pins["digital"][pin_number] = pin
+
+        else:
+            pin = self.pins["digital"][pin_number]
+
+        pin.dir(mraa.DIR_OUT)
+        pin.write(value)

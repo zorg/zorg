@@ -9,6 +9,8 @@ class Servo(Driver):
         self.angle = -1
         self.commands += ["set_angle", "get_angle"]
 
+        print "servo"
+
     def set_angle(self, angle):
 
         self.angle = angle
