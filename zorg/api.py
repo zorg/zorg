@@ -17,7 +17,16 @@ class Api(object):
 
 class HttpRequestHandler(BaseHTTPRequestHandler):
 
+    def do_OPTIONS(self):
+        self.send_response(204)
+
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
     def do_GET(self):
+        import traceback
+
         if not hasattr(self, "method"):
             self.method = "GET"
 
@@ -28,6 +37,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         try:
             response = self.get_response(path_parts)
         except Exception as ex:
+            print traceback.format_exc()
+
             response = {
                 "error": str(ex),
             }
@@ -36,6 +47,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         self.send_header('Content-Type', 'application/json')
         self.send_header('Content-Length', len(json_response))
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
         self.wfile.write(json_response)
@@ -189,7 +201,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         if self.method == "GET":
             request_body = ""
         else:
-            request_body = self.rfile.read()
+            request_body = self.rfile.read(int(self.headers.getheader('content-length')))
 
         if request_body:
             args = json.loads(request_body)
