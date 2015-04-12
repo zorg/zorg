@@ -39,4 +39,7 @@ robot = zorg.robot({
     "work": work
 })
 
-robot.start()
+api = zorg.api("zorg.api.Http", {})
+
+#robot.start()
+api.start()
