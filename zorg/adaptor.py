@@ -1,7 +1,7 @@
 class Adaptor(object):
 
-    def __init__(self, options, name=""):
-        self.name = options.get("name", name)
+    def __init__(self, options):
+        self.name = options.get("name", "")
         self.host = options.get("host", None)
         self.port = options.get("port", None)
 

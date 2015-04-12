@@ -14,8 +14,8 @@ MAX_PERIOD = 7968
 
 class Edison(Adaptor):
 
-    def __init__(self, options, name=""):
-        super(Edison, self).__init__(options, name)
+    def __init__(self, options):
+        super(Edison, self).__init__(options)
 
         self.pins = {
             "digital": {},
@@ -52,7 +52,6 @@ class Edison(Adaptor):
         pin.write(value)
 
     def analog_read(self, pin_number):
-
         if not pin_number in self.pins["analog"]:
             pin = mraa.Aio(pin_number)
             self.pins["analog"][pin_number] = pin

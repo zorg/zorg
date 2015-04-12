@@ -6,7 +6,15 @@ class Led(Driver):
     def __init__(self, options, connection):
         super(Led, self).__init__(options, connection)
 
-        self.is_on = False
+        self.current_state = False
+
+        self.commands = [
+            "set_state",
+            "is_on",
+            "turn_on",
+            "turn_off",
+            "toggle",
+        ]
 
     def set_state(self, state):
         """
@@ -16,7 +24,7 @@ class Led(Driver):
         self.connection.digital_write(self.pin, state)
 
     def is_on(self):
-        return self.is_on
+        return self.current_state
 
     def turn_on(self):
         self.is_on = True
@@ -27,7 +35,7 @@ class Led(Driver):
         self.connection.digital_write(self.pin, 0)
 
     def toggle(self):
-        if self.is_on:
+        if self.is_on():
             self.turn_off()
         else:
             self.turn_on()

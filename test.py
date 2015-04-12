@@ -1,16 +1,14 @@
 import zorg
+import time
 
 def work(my):
-
     my.lock.set_angle(50)
 
-    import time
     while True:
         my.led.toggle()
         print my.mic.read()
-        time.sleep(1)
 
-    print "yours"
+        time.sleep(1)
 
 robot = zorg.robot({
     "connections": {

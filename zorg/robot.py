@@ -39,7 +39,7 @@ class Helper(object):
     def initialize_connection(self, name):
         connection_config = self.connections[name]
 
-        connection = Connection(connection_config, name=name)
+        connection = Connection(connection_config)
 
         return connection
 
@@ -60,10 +60,10 @@ class Robot(object):
 
         self.work = options["work"]
 
-    def start(self):
-        helper = Helper(self.devices, self.connections)
+        self.helper = Helper(self.devices, self.connections)
 
-        process = Process(target=self.work, args=(helper, ))
+    def start(self):
+        process = Process(target=self.work, args=(self.helper, ))
 
         process.start()
         return process
@@ -76,15 +76,28 @@ class Robot(object):
             "name": self.name,
             "commands": self.commands,
             "events": self.events,
-            "connections": self.serialize_connections()
+            "connections": self.serialize_connections(),
+            "devices": self.serialize_devices(),
         }
 
     def serialize_connections(self):
         connections = []
 
         for name, config in self.connections.items():
-            connection = Connection(config, name=name)
+            config["name"] = name
+            connection = Connection(config)
 
             connections.append(connection.serialize())
 
         return connections
+
+    def serialize_devices(self):
+        devices = []
+
+        for name, config in self.devices.items():
+            config["name"] = name
+            device = Device(config, None)
+
+            devices.append(device.serialize())
+
+        return devices
