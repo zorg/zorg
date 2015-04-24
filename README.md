@@ -1,5 +1,7 @@
 # Zorg
 
+[![Join the chat at https://gitter.im/zorg-framework/zorg](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zorg-framework/zorg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Zorg is a Python framework for robotics and physical computing. It is based on
 [Cylon.js][cylon.js], a JavaScript framework for robotics.
 
