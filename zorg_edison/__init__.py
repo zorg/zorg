@@ -1,1 +1,0 @@
-from .adaptor import Edison
