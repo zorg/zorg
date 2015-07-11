@@ -1,5 +1,4 @@
 from multiprocessing import Process
-from .adaptor import Adaptor
 from .connection import Connection
 from .device import Device
 
@@ -42,6 +41,7 @@ class Helper(object):
         connection = Connection(connection_config)
 
         return connection
+
 
 class Robot(object):
 

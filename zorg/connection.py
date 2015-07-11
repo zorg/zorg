@@ -1,5 +1,4 @@
 from .utils import import_class
-from .adaptor import Adaptor
 
 
 class Connection(object):

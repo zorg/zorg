@@ -1,4 +1,3 @@
-from .device import Device
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import json
 
@@ -97,10 +96,6 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         return {}
 
     def handle_api(self):
-        from zorg import main
-
-        robots = main.robots
-
         response = {
             "commands": [],
             "events": [],
@@ -188,7 +183,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             "events": device.events,
         }
 
-    def handle_robot_device_command(self, robot_name, device_name, command_name):
+    def handle_robot_device_command(
+            self, robot_name, device_name, command_name):
         from zorg import main
 
         robots = main.robots
@@ -201,7 +197,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         if self.method == "GET":
             request_body = ""
         else:
-            request_body = self.rfile.read(int(self.headers.getheader('content-length')))
+            request_body = self.rfile.read(
+                int(self.headers.getheader('content-length'))
+            )
 
         if request_body:
             args = json.loads(request_body)
@@ -213,6 +211,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         return {
             "result": result,
         }
+
 
 class Http(Api):
 
