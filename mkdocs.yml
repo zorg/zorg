@@ -1,0 +1,5 @@
+site_name: zorg
+repo_url: https://github.com/zorg-framework/zorg
+pages:
+- HTTP API: api-http.md
+theme: readthedocs
