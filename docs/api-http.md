@@ -26,4 +26,4 @@ By default, an unconfigured API instance will listen on `http://127.0.0.1:8000`.
 
 For more information API configuration, see the [configuration page](configuration.md).
 
-For more information on available API routes, check out the [CPPP-IO](http://cppp.io/) spec that Cylon's API follows.
+For more information on available API routes, check out the [CPPP-IO](http://cppp.io/) spec that Zorg's API follows.
