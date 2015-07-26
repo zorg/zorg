@@ -149,6 +149,37 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         return response
 
+    def handle_robots_commands(self, robot_name, command_name=None):
+        from zorg import main
+
+        if command_name:
+            return self.handle_robot_command(robot_name, command_name)
+
+        robots = main.robots
+        robot = robots[robot_name]
+
+        response = {
+            "commands": robot.commands,
+        }
+
+        return response
+
+    def handle_robot_command(self, robot_name, command_name):
+        from zorg import main
+
+        robots = main.robots
+        robot = robots[robot_name]
+
+        command = getattr(robot, command_name)
+
+        command_arguments = self.parse_command_body()
+
+        result = command(*command_arguments)
+
+        return {
+            "result": result,
+        }
+
     def handle_robots_devices(self, robot_name, device_name=None):
         from zorg import main
 
