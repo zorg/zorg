@@ -25,3 +25,14 @@ class Driver(object):
             "commands": self.commands,
             "events": self.events,
         }
+
+
+class Ping(Driver):
+
+    def __init__(self, *args, **kwargs):
+        super(Ping, self).__init__(*args, **kwargs)
+
+        self.commands += ['ping']
+
+    def ping(self):
+        return "pong"

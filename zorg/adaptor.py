@@ -17,3 +17,12 @@ class Adaptor(object):
 
     def disconnect(self):
         raise Exception("This method needs to be overidden in child classes")
+
+
+class Loopback(Adaptor):
+
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
