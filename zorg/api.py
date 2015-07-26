@@ -5,7 +5,8 @@ import json
 class Api(object):
 
     def __init__(self, options):
-        pass
+        self.commands = []
+        self.events = []
 
     def start(self):
         pass
@@ -38,9 +39,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         except Exception as ex:
             print traceback.format_exc()
 
-            response = {
-                "error": str(ex),
-            }
+            response = self.handle_error(ex)
 
         json_response = json.dumps(response)
 
@@ -58,47 +57,38 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         return self.do_GET()
 
     def get_response(self, path):
-        if not path or path[0] != "api":
-            return {}
+        if not path:
+            return self.handle_error(path)
 
-        if len(path) == 1:
+        method_name = path[0]
+        arguments = []
+
+        if len(path) > 1:
+            method_parts = path[1::2]
+            arguments = path[2::2]
+
+            method_name = "handle_" + "_".join(method_parts)
+        elif len(path) == 1 and path[0] == "api":
             return self.handle_api()
+        else:
+            raise Exception("This page could not be found.")
 
-        if len(path) == 2 and path[1] == "robots":
-            return self.handle_robots()
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
 
-        if len(path) == 3 and path[1] == "robots":
-            return self.handle_robot(path[2])
-
-        if len(path) == 4 and path[1] == "robots":
-            if path[3] == "devices":
-                return self.handle_robot_devices(path[2])
-
-        if len(path) == 5 and path[1] == "robots":
-            if path[3] == "devices":
-                return self.handle_robot_device(path[2], path[4])
-
-        if len(path) == 6 and path[1] == "robots":
-            if path[3] == "devices":
-                if path[5] == "commands":
-                    return self.handle_robot_device_commands(path[2], path[4])
-
-                if path[5] == "events":
-                    return self.handle_robot_device_events(path[2], path[4])
-
-        if len(path) == 7 and path[1] == "robots":
-            if path[3] == "devices":
-                if path[5] == "commands":
-                    return self.handle_robot_device_command(
-                        path[2], path[4], path[6]
-                    )
+            return method(*arguments)
 
         return {}
 
+    def handle_error(self, exception):
+        return {
+            "error": str(exception),
+        }
+
     def handle_api(self):
         response = {
-            "commands": [],
-            "events": [],
+            "commands": self.server.api.commands,
+            "events": self.server.api.events,
         }
 
         response.update(self.handle_robots())
@@ -107,8 +97,32 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             "MCP": response,
         }
 
-    def handle_robots(self):
+    def handle_commands(self, command_name=None):
+        if command_name:
+            return self.handle_command(command_name)
+
+        response = {
+            "commands": self.server.api.commands,
+        }
+
+        return response
+
+    def handle_command(self, command_name):
+        command = getattr(self.server.api, command_name)
+
+        command_arguments = self.parse_command_body()
+
+        result = command(*command_arguments)
+
+        return {
+            "result": result,
+        }
+
+    def handle_robots(self, robot_name=None):
         from zorg import main
+
+        if robot_name:
+            return self.handle_robot(robot_name)
 
         robots = main.robots
 
@@ -123,11 +137,11 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         return response
 
-    def handle_robot(self, name):
+    def handle_robot(self, robot_name):
         from zorg import main
 
         robots = main.robots
-        robot = robots[name]
+        robot = robots[robot_name]
 
         response = {
             "robot": robot.serialize(),
@@ -135,11 +149,14 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         return response
 
-    def handle_robot_devices(self, name):
+    def handle_robots_devices(self, robot_name, device_name=None):
         from zorg import main
 
+        if device_name:
+            return self.handle_robot_device(robot_name, device_name)
+
         robots = main.robots
-        robot = robots[name]
+        robot = robots[robot_name]
 
         response = {
             "devices": robot.serialize_devices(),
@@ -159,8 +176,15 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             "device": device.serialize()
         }
 
-    def handle_robot_device_commands(self, robot_name, device_name):
+    def handle_robots_devices_commands(
+        self, robot_name, device_name, command_name=None
+    ):
         from zorg import main
+
+        if command_name:
+            return self.handle_robot_device_command(
+                robot_name, device_name, command_name
+            )
 
         robots = main.robots
         robot = robots[robot_name]
@@ -171,8 +195,33 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             "commands": device.commands,
         }
 
-    def handle_robot_device_events(self, robot_name, device_name):
+    def handle_robot_device_command(
+        self, robot_name, device_name, command_name
+    ):
         from zorg import main
+
+        robots = main.robots
+        robot = robots[robot_name]
+
+        device = getattr(robot.helper, device_name)
+
+        command = getattr(device, command_name)
+
+        command_arguments = self.parse_command_body()
+
+        result = command(*command_arguments)
+
+        return {
+            "result": result,
+        }
+
+    def handle_robots_devices_events(
+        self, robot_name, device_name, event_name
+    ):
+        from zorg import main
+
+        if event_name:
+            return {}
 
         robots = main.robots
         robot = robots[robot_name]
@@ -183,16 +232,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             "events": device.events,
         }
 
-    def handle_robot_device_command(
-            self, robot_name, device_name, command_name):
-        from zorg import main
-
-        robots = main.robots
-        robot = robots[robot_name]
-
-        device = getattr(robot.helper, device_name)
-
-        command = getattr(device, command_name)
+    def parse_command_body(self):
+        from collections import OrderedDict
 
         if self.method == "GET":
             request_body = ""
@@ -201,20 +242,20 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
                 int(self.headers.getheader('content-length'))
             )
 
-        if request_body:
-            args = json.loads(request_body)
-        else:
-            args = {}
+        if not request_body:
+            return []
 
-        result = command(**args)
+        command_arguments = json.loads(
+            request_body,
+            object_pairs_hook=OrderedDict,
+        )
 
-        return {
-            "result": result,
-        }
+        return command_arguments.values()
 
 
 class Http(Api):
 
     def start(self):
         server = HTTPServer(('0.0.0.0', 8000), HttpRequestHandler)
+        server.api = self
         server.serve_forever()
