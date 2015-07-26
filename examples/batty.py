@@ -18,6 +18,12 @@ robot = zorg.robot({
     }
 })
 
+def hello(target):
+    return "Hello, %s!" % target
+
+robot.commands += ['hello']
+robot.hello = hello
+
 api = zorg.api("zorg.api.Http", {})
 
 def echo(message=None):
