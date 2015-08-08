@@ -1,4 +1,5 @@
 from multiprocessing import Process
+from .commands import CommandsMixin
 from .connection import Connection
 from .device import Device
 from .events import EventsMixin
@@ -46,7 +47,7 @@ class Helper(object):
         return connection
 
 
-class Robot(EventsMixin):
+class Robot(CommandsMixin, EventsMixin):
 
     def __init__(self, options):
         super(Robot, self).__init__()
@@ -57,8 +58,6 @@ class Robot(EventsMixin):
         self.devices = options.get("devices", {})
 
         self.drivers = {}
-
-        self.commands = []
 
         self.running = False
 
@@ -80,7 +79,6 @@ class Robot(EventsMixin):
 
         serialized.update({
             "name": self.name,
-            "commands": self.commands,
             "connections": self.serialize_connections(),
             "devices": self.serialize_devices(),
         })

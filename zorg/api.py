@@ -1,5 +1,6 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing import Process
+from .commands import CommandsMixin
 from .events import EventsMixin
 import json
 
@@ -12,12 +13,10 @@ class ResponseFinished(Exception):
     pass
 
 
-class Api(EventsMixin):
+class Api(CommandsMixin, EventsMixin):
 
     def __init__(self, options):
         super(Api, self).__init__()
-
-        self.commands = []
 
     def start(self):
         pass
@@ -106,10 +105,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         }
 
     def handle_api(self):
-        response = {
-            "commands": self.server.api.commands,
-            "events": self.server.api.serialize_events(),
-        }
+        response = self.server.api.serialize()
 
         response.update(self.handle_robots())
 
@@ -122,20 +118,18 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             return self.handle_command(command_name)
 
         response = {
-            "commands": self.server.api.commands,
+            "commands": self.server.api.serialize_commands(),
         }
 
         return response
 
     def handle_command(self, command_name):
-        if not hasattr(self.server.api, command_name):
+        if command_name not in self.server.api.serialize_commands():
             raise Http404()
-
-        command = getattr(self.server.api, command_name)
 
         command_arguments = self.parse_command_body()
 
-        result = command(*command_arguments)
+        result = self.server.api.run_command(command_name, command_arguments)
 
         return {
             "result": result,
@@ -186,7 +180,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         robot = robots[robot_name]
 
         response = {
-            "commands": robot.commands,
+            "commands": robot.serialize_commands(),
         }
 
         return response
@@ -197,11 +191,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         robots = main.robots
         robot = robots[robot_name]
 
-        command = getattr(robot, command_name)
-
         command_arguments = self.parse_command_body()
 
-        result = command(*command_arguments)
+        result = robot.run_command(command_name, command_arguments)
 
         return {
             "result": result,
@@ -279,7 +271,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         device = getattr(robot.helper, device_name)
 
         return {
-            "commands": device.commands,
+            "commands": device.serialize_commands(),
         }
 
     def handle_robot_device_command(
@@ -292,11 +284,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         device = getattr(robot.helper, device_name)
 
-        command = getattr(device, command_name)
-
         command_arguments = self.parse_command_body()
 
-        result = command(*command_arguments)
+        result = device.run_command(command_name, *command_arguments)
 
         return {
             "result": result,

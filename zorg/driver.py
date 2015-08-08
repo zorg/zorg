@@ -1,7 +1,8 @@
+from .commands import CommandsMixin
 from .events import EventsMixin
 
 
-class Driver(EventsMixin):
+class Driver(CommandsMixin, EventsMixin):
 
     def __init__(self, options, connection):
         super(Driver, self).__init__()
@@ -17,8 +18,6 @@ class Driver(EventsMixin):
         self.options = options
 
         self.connection = connection
-
-        self.commands = []
 
     def start(self):
         raise Exception("This needs to be implemented by the child class")
@@ -44,7 +43,6 @@ class Driver(EventsMixin):
             "name": self.name,
             "driver": driver,
             "connection": self.connection_name,
-            "commands": self.commands,
             "details": details,
         })
 
@@ -56,11 +54,9 @@ class Ping(Driver):
     def __init__(self, *args, **kwargs):
         super(Ping, self).__init__(*args, **kwargs)
 
-        self.commands += ["ping"]
-        self.events["ping"] = {
-            "source": self.ping,
-            "interval": 0.1,
-        }
+        self.register_command("ping", self.ping)
+
+        self.register_event("ping", self.ping)
 
     def start(self):
         pass

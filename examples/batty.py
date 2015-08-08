@@ -26,13 +26,9 @@ def hello(target):
 def hello_event():
     return "hello"
 
-robot.commands += ['hello']
-robot.hello = hello
+robot.register_command("hello", hello)
 
-robot.events["hello"] = {
-    "source": hello_event,
-    "interval": 0.1,
-}
+robot.register_event("hello", hello_event)
 
 api = zorg.api("zorg.api.Http", {})
 
@@ -42,8 +38,7 @@ def echo(message=None):
 
     return message
 
-api.commands += ['echo']
-api.echo = echo
+api.register_command("echo", echo)
 
 robot.start()
 api.start()

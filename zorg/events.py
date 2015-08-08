@@ -68,6 +68,12 @@ class EventsMixin(object):
 
         return event_stream
 
+    def register_event(self, name, source, interval=0.1):
+        self.events[name] = {
+            "source": source,
+            "interval": interval,
+        }
+
     def serialize(self):
         return {
             "events": self.serialize_events(),
