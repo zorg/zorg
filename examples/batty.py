@@ -30,7 +30,7 @@ api = zorg.api("zorg.api.Http", {})
 
 def echo(message=None):
     if message is None:
-        return "No value passed to echo"
+        raise Exception("No value passed to echo")
 
     return message
 

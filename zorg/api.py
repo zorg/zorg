@@ -2,6 +2,10 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import json
 
 
+class Http404(Exception):
+    pass
+
+
 class Api(object):
 
     def __init__(self, options):
@@ -30,9 +34,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         if not hasattr(self, "method"):
             self.method = "GET"
 
-        self.send_response(200)
-
         path_parts = filter(len, self.path.split("/"))
+
+        status_code = 200
 
         try:
             response = self.get_response(path_parts)
@@ -41,7 +45,14 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
             response = self.handle_error(ex)
 
+            if isinstance(ex, Http404):
+                status_code = 404
+            else:
+                status_code = 500
+
         json_response = json.dumps(response)
+
+        self.send_response(status_code)
 
         self.send_header('Content-Type', 'application/json')
         self.send_header('Content-Length', len(json_response))
@@ -71,7 +82,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         elif len(path) == 1 and path[0] == "api":
             return self.handle_api()
         else:
-            raise Exception("This page could not be found.")
+            raise Http404("This page could not be found.")
 
         if hasattr(self, method_name):
             method = getattr(self, method_name)
@@ -108,6 +119,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         return response
 
     def handle_command(self, command_name):
+        if not hasattr(self.server.api, command_name):
+            raise Http404()
+
         command = getattr(self.server.api, command_name)
 
         command_arguments = self.parse_command_body()
@@ -141,6 +155,10 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         from zorg import main
 
         robots = main.robots
+
+        if robot_name not in robots:
+            raise Http404("No robot found with the name %s" % robot_name)
+
         robot = robots[robot_name]
 
         response = {
@@ -187,6 +205,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         robot = robots[robot_name]
 
         if connection_name:
+            if connection_name not in robot.connections:
+                raise Http404("No connection found with the name %s" % connection_name)
+
             connection = robot.helper.initialize_connection(connection_name)
 
             response = {
@@ -221,6 +242,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         robots = main.robots
         robot = robots[robot_name]
+
+        if not hasattr(robot.helper, device_name):
+            raise Http404("No device found with the name %s" % device_name)
 
         device = getattr(robot.helper, device_name)
 
