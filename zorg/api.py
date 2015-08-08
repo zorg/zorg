@@ -180,6 +180,27 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             "result": result,
         }
 
+    def handle_robots_connections(self, robot_name, connection_name=None):
+        from zorg import main
+
+        robots = main.robots
+        robot = robots[robot_name]
+
+        if connection_name:
+            connection = robot.helper.initialize_connection(connection_name)
+
+            response = {
+                "connection": connection.serialize(),
+            }
+        else:
+            connections = robot.serialize_connections()
+
+            response = {
+                "connections": connections,
+            }
+
+        return response
+
     def handle_robots_devices(self, robot_name, device_name=None):
         from zorg import main
 

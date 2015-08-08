@@ -5,11 +5,17 @@ class Adaptor(object):
         self.host = options.get("host", None)
         self.port = options.get("port", None)
 
+        self.options = options
+
     def serialize(self):
+        details = self.options.copy()
+
+        if "name" in details:
+            del details["name"]
+
         return {
             "name": self.name,
-            "host": self.host,
-            "port": self.port,
+            #"details": self.options,
         }
 
     def connect(self):
