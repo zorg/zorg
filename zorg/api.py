@@ -268,7 +268,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         }
 
     def handle_robots_devices_events(
-        self, robot_name, device_name, event_name
+        self, robot_name, device_name, event_name=None
     ):
         from zorg import main
 

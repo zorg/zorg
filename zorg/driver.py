@@ -6,6 +6,8 @@ class Driver(object):
         self.pin = options.get("pin", None)
         self.interval = options.get("interval", 10)
 
+        self.options = options
+
         self.connection = connection
 
         self.commands = []
@@ -18,12 +20,24 @@ class Driver(object):
         raise Exception("This needs to be implemented by the child class")
 
     def serialize(self):
+        details = self.options.copy()
+
+        if "name" in details:
+            del details["name"]
+
+        if "connection" in details:
+            del details["connection"]
+
+        driver = details.pop("driver", "")
+        driver = driver.split(".")[-1]
+
         return {
             "name": self.name,
-            "pin": self.pin,
+            "driver": driver,
             "connection": self.connection_name,
             "commands": self.commands,
             "events": self.events,
+            "details": details,
         }
 
 

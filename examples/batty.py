@@ -7,6 +7,7 @@ robot = zorg.robot({
         "loopback": {
             "adaptor": "zorg.adaptor.Loopback",
             "port": "/dev/null",
+            "test": "abc",
         }
     },
     "devices": {
@@ -14,6 +15,7 @@ robot = zorg.robot({
             "connection": "loopback",
             "driver": "zorg.driver.Ping",
             "pin": 13,
+            "test": "abc",
         }
     }
 })

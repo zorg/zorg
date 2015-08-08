@@ -13,9 +13,13 @@ class Adaptor(object):
         if "name" in details:
             del details["name"]
 
+        adaptor = details.pop("adaptor", "")
+        adaptor = adaptor.split(".")[-1]
+
         return {
             "name": self.name,
-            #"details": self.options,
+            "adaptor": adaptor,
+            "details": details,
         }
 
     def connect(self):
