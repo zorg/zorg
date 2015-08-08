@@ -1,6 +1,7 @@
 from multiprocessing import Process
 from .connection import Connection
 from .device import Device
+from .events import EventsMixin
 
 
 class Helper(object):
@@ -22,6 +23,7 @@ class Helper(object):
 
     def initialize_device(self, name):
         device_config = self.devices[name]
+        device_config["name"] = name
 
         connection_name = device_config["connection"]
 
@@ -37,15 +39,18 @@ class Helper(object):
 
     def initialize_connection(self, name):
         connection_config = self.connections[name]
+        connection_config["name"] = name
 
         connection = Connection(connection_config)
 
         return connection
 
 
-class Robot(object):
+class Robot(EventsMixin):
 
     def __init__(self, options):
+        super(Robot, self).__init__()
+
         self.name = options.get("name", "")
         self.connections = options.get("connections", {})
         self.adaptors = options.get("adaptors", {})
@@ -54,7 +59,6 @@ class Robot(object):
         self.drivers = {}
 
         self.commands = []
-        self.events = []
 
         self.running = False
 
@@ -72,13 +76,16 @@ class Robot(object):
         pass
 
     def serialize(self):
-        return {
+        serialized = super(Robot, self).serialize()
+
+        serialized.update({
             "name": self.name,
             "commands": self.commands,
-            "events": self.events,
             "connections": self.serialize_connections(),
             "devices": self.serialize_devices(),
-        }
+        })
+
+        return serialized
 
     def serialize_connections(self):
         connections = []

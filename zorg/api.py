@@ -1,4 +1,6 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from multiprocessing import Process
+from .events import EventsMixin
 import json
 
 
@@ -6,11 +8,16 @@ class Http404(Exception):
     pass
 
 
-class Api(object):
+class ResponseFinished(Exception):
+    pass
+
+
+class Api(EventsMixin):
 
     def __init__(self, options):
+        super(Api, self).__init__()
+
         self.commands = []
-        self.events = []
 
     def start(self):
         pass
@@ -47,6 +54,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
             if isinstance(ex, Http404):
                 status_code = 404
+            elif isinstance(ex, ResponseFinished):
+                return
             else:
                 status_code = 500
 
@@ -99,7 +108,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
     def handle_api(self):
         response = {
             "commands": self.server.api.commands,
-            "events": self.server.api.events,
+            "events": self.server.api.serialize_events(),
         }
 
         response.update(self.handle_robots())
@@ -206,7 +215,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         if connection_name:
             if connection_name not in robot.connections:
-                raise Http404("No connection found with the name %s" % connection_name)
+                raise Http404(
+                    "No connection found with the name %s" % connection_name
+                )
 
             connection = robot.helper.initialize_connection(connection_name)
 
@@ -296,17 +307,54 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
     ):
         from zorg import main
 
-        if event_name:
-            return {}
-
         robots = main.robots
         robot = robots[robot_name]
 
         device = getattr(robot.helper, device_name)
 
+        if event_name:
+            event_stream = device.get_event_stream(event_name)
+
+            return self.handle_event_stream(event_stream)
+
         return {
-            "events": device.events,
+            "events": device.serialize_events(),
         }
+
+    def handle_robots_events(self, robot_name, event_name=None):
+        from zorg import main
+
+        robots = main.robots
+        robot = robots[robot_name]
+
+        if event_name:
+            event_stream = robot.get_event_stream(event_name)
+
+            return self.handle_event_stream(event_stream)
+
+        return {
+            "events": robot.serialize_events()
+        }
+
+    def handle_event_stream(self, event_stream):
+        from zorg.events import Event
+
+        queue = event_stream.queue
+
+        self.send_response(200)
+        self.send_header('content-type', 'text/event-stream')
+        self.end_headers()
+
+        try:
+            for event in iter(queue.get, Event.STOP):
+                self.wfile.write(event.serialize())
+        except IOError:
+            # If the client closes the stream, move on
+            pass
+
+        event_stream.stop()
+
+        raise ResponseFinished()
 
     def parse_command_body(self):
         from collections import OrderedDict
@@ -331,7 +379,13 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
 class Http(Api):
 
-    def start(self):
+    def start_server(self):
         server = HTTPServer(('0.0.0.0', 8000), HttpRequestHandler)
         server.api = self
         server.serve_forever()
+
+    def start(self):
+        process = Process(target=self.start_server)
+
+        process.start()
+        return process

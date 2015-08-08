@@ -23,8 +23,16 @@ robot = zorg.robot({
 def hello(target):
     return "Hello, %s!" % target
 
+def hello_event():
+    return "hello"
+
 robot.commands += ['hello']
 robot.hello = hello
+
+robot.events["hello"] = {
+    "source": hello_event,
+    "interval": 0.1,
+}
 
 api = zorg.api("zorg.api.Http", {})
 
