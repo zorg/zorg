@@ -13,12 +13,9 @@ except ImportError:
     print("Module pypandoc not found, could not convert Markdown to RST")
     readme = lambda f: open(f, "r").read()
 
-req = open("requirements.txt")
-requirements = req.readlines()
-
 setup(
     name="zorg",
-    version="0.0.2",
+    version="0.0.3",
     url="https://github.com/zorg-framework/zorg",
     description="Python framework for robotics and physical computing.",
     long_description=readme("README.md"),
@@ -27,7 +24,6 @@ setup(
     packages=find_packages(),
     package_dir={"zorg": "zorg"},
     include_package_data=True,
-    install_requires=requirements,
     license="MIT",
     zip_safe=True,
     platforms=["any"],
