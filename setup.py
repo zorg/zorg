@@ -18,7 +18,7 @@ requirements = req.readlines()
 
 setup(
     name="zorg",
-    version="0.0.1",
+    version="0.0.2",
     url="https://github.com/zorg-framework/zorg",
     description="Python framework for robotics and physical computing.",
     long_description=readme("README.md"),
@@ -29,9 +29,9 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     license="MIT",
-    zip_safe=False,
+    zip_safe=True,
     platforms=["any"],
-    keywords=["zorg"],
+    keywords=["zorg", "robotics"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
