@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from distutils.core import setup, find_packages
+from setuptools import setup, find_packages
 
 try:
     from pypandoc import convert
@@ -16,7 +13,7 @@ except ImportError:
 setup(
     name="zorg",
     version="0.0.3",
-    url="https://github.com/zorg-framework/zorg",
+    url="https://github.com/zorg/zorg",
     description="Python framework for robotics and physical computing.",
     long_description=readme("README.md"),
     author="Zorg Group",
