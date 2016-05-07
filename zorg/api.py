@@ -36,7 +36,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         try:
             response = self.get_response(path_parts)
         except Exception as ex:
-            print traceback.format_exc()
+            print(traceback.format_exc())
 
             response = {
                 "error": str(ex),
